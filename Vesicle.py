@@ -20,6 +20,7 @@ class Vesicle:
     nSample: int
     dt: float
     r: float
+    overlapped: list
 
 
 class Vesicles:
@@ -30,7 +31,7 @@ class Vesicles:
     def __init__(self):
         self.vesicles = []
 
-    def is_position_valid(self, center: np.ndarray, samples: np.ndarray, cell) -> bool:
+    def overlap_check(self, oldOverlapped: list, center: np.ndarray, samples: np.ndarray, cell) -> bool:
         """
         Checks whether a vesicle at the given center and samples can be placed without
         overlapping occupied triangles.
@@ -44,21 +45,27 @@ class Vesicles:
             bool: True if the position is valid; False otherwise.
         """
         # Compute distance from vesicle center to each triangle center
+        newOverlapped = []
         diff = cell.centers - center
         distances = np.linalg.norm(diff, axis=1)
         triangleIndexes = np.where(distances <= 10)[0]
 
         if triangleIndexes.size == 0:
-            return False
+            return (False,oldOverlapped)
 
         for index in triangleIndexes:
             isOc = cell.is_occupied(samples, index)
-            if cell.triangles[index].occupied and isOc:
-                return False
+            if cell.triangles[index].occupied and isOc and not index in oldOverlapped :
+                return (False,oldOverlapped)
             elif isOc:
-                cell.triangles[index].occupied = True
+                newOverlapped.append(index)
+            
+        for index in oldOverlapped:
+            cell.triangles[index].occupied = False
+        for index in newOverlapped:
+            cell.triangles[index].occupied = True
 
-        return True
+        return (True,newOverlapped)
 
     def create(self, CIRCLE_RADIUS, x_max, y_max, N_SAMPLES, diffusion_coeff, dt, cell):
         """
@@ -83,26 +90,28 @@ class Vesicles:
         samples = center + CIRCLE_RADIUS * np.column_stack((np.cos(angles), np.sin(angles)))
 
         vesicle = Vesicle(center=center, samples=samples, r=CIRCLE_RADIUS,
-                          diffusion_coeff=diffusion_coeff, nSample=N_SAMPLES, dt=dt)
+                          diffusion_coeff=diffusion_coeff, nSample=N_SAMPLES, dt=dt, overlapped=[])
 
-        if self.is_position_valid(center, samples, cell):
+        flag,overlap = self.overlap_check([], center, samples, cell)
+        if flag:
+            vesicle.overlapped = overlap
             self.vesicles.append(vesicle)
         else:
             # Recursive retry
             self.create(CIRCLE_RADIUS, x_max, y_max, N_SAMPLES, diffusion_coeff, dt, cell)
 
-    def diffuse(self, visual, cell):
+    def diffuse(self, cell):
         """
         Performs a diffusion step on all vesicles. Each vesicle moves by a random
         Brownian step, and updates its position only if the new location is valid.
 
         Args:
-            visual: Visualization object that holds circles/samples for update.
             cell (Cell): The mesh to test occupancy against.
         """
         for index, vesicle in enumerate(self.vesicles):
-            c = vesicle.center.copy()
-            s = vesicle.samples.copy()
+            old_center = vesicle.center.copy()
+            old_samples = vesicle.samples.copy()
+            old_overlap = vesicle.overlapped.copy()
 
             # Brownian motion scaling
             scale = np.sqrt(2 * vesicle.diffusion_coeff * vesicle.dt)
@@ -111,11 +120,13 @@ class Vesicles:
             displacement = scale * np.random.normal(0, 1, size=2)
 
             # Apply displacement
-            new_center = c + displacement
-            new_samples = s + displacement
+            new_center = old_center + displacement
+            new_samples = old_samples + displacement
 
             # Validate and update
-            if self.is_position_valid(new_center, new_samples, cell):
+            flag,new_overlap = self.overlap_check(old_overlap, new_center, new_samples, cell)
+            if flag:
                 vesicle.center = new_center
                 vesicle.samples = new_samples
+                vesicle.overlapped = new_overlap
 

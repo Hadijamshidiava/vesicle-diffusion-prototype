@@ -99,4 +99,4 @@ class Visualizer:
         """
         for index, triangle in enumerate(self.triangle_visuals):
             triangle.color = (1, 0, 0, 0.15)
-            cell.triangles[index].occupied = False
+            # cell.triangles[index].occupied = False

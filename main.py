@@ -30,7 +30,7 @@ animation.draw_vesicles(vesicles.vesicles)
 # Update function
 def update(event):
     animation.reset_background(cell)
-    vesicles.diffuse(animation, cell)
+    vesicles.diffuse(cell)
     animation.refresh(vesicles.vesicles, cell)
 
 # Run animation
