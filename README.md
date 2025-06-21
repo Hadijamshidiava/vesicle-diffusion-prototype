@@ -16,7 +16,7 @@ pip install numpy vispy dataclasses
 
 This project is a fast and modular prototype for simulating vesicle diffusion within a 2D triangular mesh — a simplified abstraction of vesicle transport along biological membranes.
 
-The simulation was developed in response to a scientific paper shared as part of a PhD interview preparation, aiming to demonstrate understanding of spatial diffusion, geometric sampling, and efficient real-time computation.
+The simulation was developed in response to a scientific paper shared as part of an interview preparation, aiming to demonstrate understanding of spatial diffusion, geometric sampling, and efficient real-time computation.
 
 ### Key Features
 

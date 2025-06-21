@@ -48,7 +48,7 @@ class Vesicles:
         newOverlapped = []
         diff = cell.centers - center
         distances = np.linalg.norm(diff, axis=1)
-        triangleIndexes = np.where(distances <= 24)[0]
+        triangleIndexes = np.where(distances <= 3*r)[0]
 
         if triangleIndexes.size == 0:
             return (False,oldOverlapped)
