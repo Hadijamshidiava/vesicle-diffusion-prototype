@@ -8,11 +8,11 @@ from Visualizer import Visualizer
 GRID_SIZE_X = 10
 GRID_SIZE_Y = 10
 L = 10.0
-CIRCLE_RADIUS = 8.0
+CIRCLE_RADIUS = 10.0
 DIFFUSION_COEFF = 5.0
 DT = 0.1
-N_SAMPLES = 20
-N_VESICLES = 6
+N_SAMPLES = 8
+N_VESICLES = 4
 
 # Initialize simulation components
 cell = Cell(GRID_SIZE_Y, GRID_SIZE_X, L)

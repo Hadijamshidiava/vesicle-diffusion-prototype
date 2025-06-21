@@ -31,7 +31,7 @@ class Vesicles:
     def __init__(self):
         self.vesicles = []
 
-    def overlap_check(self, oldOverlapped: list, center: np.ndarray, samples: np.ndarray, cell) -> bool:
+    def overlap_check(self, r, oldOverlapped: list, center: np.ndarray, samples: np.ndarray, cell) -> bool:
         """
         Checks whether a vesicle at the given center and samples can be placed without
         overlapping occupied triangles.
@@ -48,13 +48,13 @@ class Vesicles:
         newOverlapped = []
         diff = cell.centers - center
         distances = np.linalg.norm(diff, axis=1)
-        triangleIndexes = np.where(distances <= 10)[0]
+        triangleIndexes = np.where(distances <= 24)[0]
 
         if triangleIndexes.size == 0:
             return (False,oldOverlapped)
 
         for index in triangleIndexes:
-            isOc = cell.is_occupied(samples, index)
+            isOc = cell.is_occupied(center, r,samples, index)
             if cell.triangles[index].occupied and isOc and not index in oldOverlapped :
                 return (False,oldOverlapped)
             elif isOc:
@@ -92,7 +92,7 @@ class Vesicles:
         vesicle = Vesicle(center=center, samples=samples, r=CIRCLE_RADIUS,
                           diffusion_coeff=diffusion_coeff, nSample=N_SAMPLES, dt=dt, overlapped=[])
 
-        flag,overlap = self.overlap_check([], center, samples, cell)
+        flag,overlap = self.overlap_check(CIRCLE_RADIUS, [], center, samples, cell)
         if flag:
             vesicle.overlapped = overlap
             self.vesicles.append(vesicle)
@@ -124,7 +124,7 @@ class Vesicles:
             new_samples = old_samples + displacement
 
             # Validate and update
-            flag,new_overlap = self.overlap_check(old_overlap, new_center, new_samples, cell)
+            flag,new_overlap = self.overlap_check(vesicle.r, old_overlap, new_center, new_samples, cell)
             if flag:
                 vesicle.center = new_center
                 vesicle.samples = new_samples

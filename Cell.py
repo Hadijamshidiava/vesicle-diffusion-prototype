@@ -88,7 +88,7 @@ class Cell():
                     create_triangle(np.array([p0, p1, p3]))
                     create_triangle(np.array([p0, p3, p2]))
 
-    def is_occupied(self, samples: np.ndarray, triIndex: int) -> bool:
+    def is_occupied(self, center, r, samples: np.ndarray, triIndex: int) -> bool:
         """
         Checks whether any of the sample points fall within the triangle at triIndex.
 
@@ -105,7 +105,10 @@ class Cell():
         diff = s - v                               
         dot = np.sum(diff * triangle.normals[:, None, :], axis=-1)
         inside = np.all(dot >= 0, axis=0)          # shape: (N,)
-        return np.any(inside)
+        diff = v - center
+        distances = np.linalg.norm(diff, axis=1)
+        trianglesInside = np.all(distances <= r, axis=1)
+        return (np.any(inside) or np.any(trianglesInside))
 
     @property
     def x_max(self) -> float:
