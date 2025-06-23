@@ -12,7 +12,7 @@ CIRCLE_RADIUS = 10.0
 DIFFUSION_COEFF = 5.0
 DT = 0.1
 N_SAMPLES = 8
-N_VESICLES = 4
+N_VESICLES = 7
 
 # Initialize simulation components
 cell = Cell(GRID_SIZE_Y, GRID_SIZE_X, L)
@@ -21,7 +21,11 @@ vesicles = Vesicles()
 
 # Seed initial vesicles
 for _ in range(N_VESICLES):
-    vesicles.create(CIRCLE_RADIUS, cell.x_max, cell.y_max, N_SAMPLES, DIFFUSION_COEFF, DT, cell)
+    try:
+        vesicles.create(CIRCLE_RADIUS, cell.x_max, cell.y_max, N_SAMPLES, DIFFUSION_COEFF, DT, cell)
+    except Exception as e:
+        print("The visicles hardly fit in the cell, please reduce the number or size of them!")
+    
 
 # Draw initial scene
 animation.background_init(cell.triangles)
